@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const taskSchema = new mongoose.Schema({
+const subTaskSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String },
     deadline: { type: Date },
@@ -12,8 +12,8 @@ const taskSchema = new mongoose.Schema({
     updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     responsible_user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     edited: { type: Boolean },
-    subtasks: { type: Number, default: 0 },
+    parent_task_id: { type: mongoose.Schema.Types.ObjectId, ref: "Task" }
 })
 
-const Task = mongoose.model("Task", taskSchema);
-export default Task
+const Subtask = mongoose.model("Subtask", subTaskSchema);
+export default Subtask

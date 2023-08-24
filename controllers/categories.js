@@ -26,10 +26,22 @@ export async function getCategoryById(request, response) {
 
 //POST 
 export async function postCategory(request, response) {
+    const authHeader = request.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        response.status(401).json({ message: "Please log in to create a new task" })
+    }
     try {
-        const task = new Category({ ...request.body, created_at: new Date() })
-        const newCategory = await task.save()
-        response.status(200).json(newCategory)
+        jsonwebtoken.verify(token, process.env.SECRET_KEY, async (err, user) => {
+            if (err) {
+                response.status(401).json({ message: err.message })
+            }
+            request.user = user
+            const category = new Category({ ...request.body, created_at: new Date(), created_by: request.user.id })
+            const newCategory = await category.save()
+            response.status(200).json(newCategory)
+        })
     }
     catch (err) {
         response.status(500).json({ message: err.message })
@@ -39,9 +51,20 @@ export async function postCategory(request, response) {
 
 //PUT
 export async function updateCategory(request, response) {
+    const authHeader = request.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        response.status(401).json({ message: "Please log in to create a new task" })
+    }
     try {
-        const updatedCategory = await Category.findByIdAndUpdate(request.params.id, { ...request.body, updated_at: new Date(), edited: true }, { new: true })
-        response.json(updatedCategory)
+        jsonwebtoken.verify(token, process.env.SECRET_KEY, async (err, user) => {
+            request.user = user
+            const updatedCategory = await Category.findByIdAndUpdate(request.params.id,
+                { ...request.body, updated_at: new Date(), edited: true, updated_by: request.user.id },
+                { new: true })
+            response.json(updatedCategory)
+        })
     }
     catch (err) {
         response.status(500).json({ message: err.message })
